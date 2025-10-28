@@ -20,7 +20,7 @@ class SecurityController extends AbstractController
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-
+// какой-то комментарий
 if ($this->getUser()) {
 prettyDump($this->getUser()->getRoles());
     prettyDump($this->isGranted('ROLE_ADMIN')); // admin
