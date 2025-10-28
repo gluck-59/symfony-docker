@@ -11,10 +11,11 @@ class piController
     #[Route('/pi')]
     public function index(): Response
     {
-        return new Response(
-            phpinfo()
-//        var_dump(123)
-        );
+        ob_start();
+        phpinfo();
+        $info = ob_get_clean();
+
+        return new Response($info);
     }
 
 
