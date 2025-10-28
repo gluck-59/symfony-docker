@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
+use Symfony\Component\VarDumper\VarDumper;
 
 class SecurityController extends AbstractController
 {
@@ -23,15 +24,22 @@ class SecurityController extends AbstractController
 if ($this->getUser()) {
 prettyDump($this->getUser()->getRoles());
     prettyDump($this->isGranted('ROLE_ADMIN')); // admin
-//    prettyDump($this->isGranted('ROLE_USER')); // user
-//    return $this->redirect('/pi');
+    prettyDump($this->isGranted('ROLE_USER')); // user
+
+//    VarDumper::dump($this->isGranted('ROLE_USER'));
+//     return $this->redirect('/pi');
+
+    return $this->render('security/login.html.twig', [
+        'last_username' => $lastUsername,
+        'error' => $error,
+    ]);
 } else {
     return $this->render('security/login.html.twig', [
         'last_username' => $lastUsername,
         'error' => $error,
     ]);
-    }
 }
+    }
 
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void

@@ -27,6 +27,24 @@ class RegistrationController extends AbstractController
             // encode the plain password
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
 
+            // Roles from form (unmapped field 'roles')
+            $formRoles = $form->get('roles')->getData();
+            if (is_array($formRoles) && !empty($formRoles)) {
+                $normalized = [];
+                foreach ($formRoles as $role) {
+                    if (!is_string($role) || $role === '') {
+                        continue;
+                    }
+                    $role = strtoupper(trim($role));
+                    if (str_starts_with($role, 'ROLE_')) {
+                        $normalized[] = $role;
+                    }
+                }
+                if (!empty($normalized)) {
+                    $user->setRoles(array_values(array_unique($normalized)));
+                }
+            }
+
             $entityManager->persist($user);
             $entityManager->flush();
 
