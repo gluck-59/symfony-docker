@@ -22,11 +22,11 @@ class SecurityController extends AbstractController
 
 // какой-то комментарий
 if ($this->getUser()) {
-prettyDump($this->getUser()->getRoles());
+    prettyDump($this->getUser()->getRoles());
     prettyDump($this->isGranted('ROLE_ADMIN')); // admin
-    prettyDump($this->isGranted('ROLE_USER')); // user
+//    prettyDump($this->isGranted('ROLE_USER')); // user
 
-//    VarDumper::dump($this->isGranted('ROLE_USER'));
+//    VarDumper::dump($this->isGranted('ROLE_ADMIN'));
 //     return $this->redirect('/pi');
 
     return $this->render('security/login.html.twig', [
