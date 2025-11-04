@@ -19,12 +19,12 @@ security:
             lazy: true
             provider: app_user_provider
             form_login:
-                login_path: app_login
-                check_path: app_login
+                login_path: /
+                check_path: /
                 enable_csrf: true
-                default_target_path: /pi # сработает после авторизации
-            logout:
-                path: app_logout
+                default_target_path: /site/main # сработает после авторизации
+#            logout:
+#                path: logout
                 # where to redirect after logout
                 # target: app_any_route
 

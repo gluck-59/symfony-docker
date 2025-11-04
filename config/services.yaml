@@ -24,3 +24,7 @@ services:
     cache.adapter.null:
         class: Symfony\Component\Cache\Adapter\NullAdapter # для откл кэша
         arguments: [~]
+
+twig:
+    globals:
+        app_name: '%env(APP_NAME)%'

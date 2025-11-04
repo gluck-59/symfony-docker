@@ -23,7 +23,7 @@ class AccountController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
             if (!\is_object($user)) {
-                return $this->redirectToRoute('app_login');
+                return $this->redirectToRoute('login');
             }
 
             $currentPassword = (string) $form->get('currentPassword')->getData();
@@ -35,12 +35,13 @@ class AccountController extends AbstractController
                 $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
                 $entityManager->flush();
                 $this->addFlash('success', 'Password changed successfully.');
-                return $this->redirectToRoute('app_login');
+                return $this->redirectToRoute('login');
             }
         }
 
         return $this->render('account/change_password.html.twig', [
             'form' => $form,
+            'title' => 'Пароль'
         ]);
     }
 }

@@ -17,7 +17,7 @@
         "symfony/asset": "7.3.*",
         "symfony/console": "7.3.*",
         "symfony/dotenv": "7.3.*",
-        "symfony/flex": "^2.8.2",
+        "symfony/flex": "^2.9.0",
         "symfony/form": "7.3.*",
         "symfony/framework-bundle": "7.3.*",
         "symfony/runtime": "7.3.*",
@@ -27,8 +27,9 @@
         "symfony/yaml": "7.3.*",
         "symfonycasts/verify-email-bundle": ">=1.17.4",
         "twbs/bootstrap": "^5.3.8",
+        "twbs/bootstrap-icons": "^1.13.1",
         "twig/extra-bundle": "^2.12|^3.22",
-        "twig/twig": "^2.12|^3.21.1"
+        "twig/twig": "^2.12|^3.22.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^12.4.2",

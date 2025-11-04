@@ -6,6 +6,7 @@ use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
@@ -15,23 +16,29 @@ class RegistrationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $isEdit = $options['is_edit'] ?? false;
         $builder
-            ->add('username')
+            ->add('username', TextType::class, [
+                'row_attr' => ['class' => 'jopa1'],
+                'attr' => ['class' => 'jopa2'],
+                'label' => 'Имя',
+                ])
             ->add('roles', ChoiceType::class, [
-                'label' => 'Roles',
+                'row_attr' => ['class' => 'form-check form-check-inline'],
+                'label' => 'Роли',
                 'mapped' => false,
                 'multiple' => true,
                 'expanded' => true,
                 'choices' => [
-                    'User' => 'ROLE_USER',
                     'Admin' => 'ROLE_ADMIN',
                     'Manager' => 'ROLE_MANAGER',
                 ],
                 'empty_data' => [],
             ])
-            ->add('plainPassword', PasswordType::class, [
-                // instead of being set onto the object directly,
-                // this is read and encoded in the controller
+            ->add('password', PasswordType::class, [
+                'row_attr' => ['class' => 'form-control form-control-sm'],
+                'required' => !$isEdit, // пароль обязателен только при регистрации
+                'label' => 'Пароль',
                 'mapped' => false,
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
@@ -49,10 +56,11 @@ class RegistrationFormType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'is_edit' => false,
         ]);
     }
 }
