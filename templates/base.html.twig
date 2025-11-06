@@ -24,18 +24,57 @@
                                 {% endif %}
                             </ul>
                             {% if app.user %}
-                                <ul class="navbar-nav me1-auto mb-2 mb-lg-0">
-                                    <li>
-                                        <a href="{{ path('logout') }}">{{ app.user.userIdentifier }} (Logout)</a>
+                                <ul class="navbar-nav me1-auto mb-2 mb-lg-0 dropdown dropstart">
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            {{ app.user.userIdentifier }}
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="/user/change-password">Сменить пароль</a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ path('logout') }}">Выход</a>
+                                            </li>
+                                        </ul>
                                     </li>
                                 </ul>
                             {% endif %}
+
+{#                            <div class="dropdown dropstart">#}
+{#                                <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">#}
+{#                                    Раскрывающееся влево меню#}
+{#                                </a>#}
+{#                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">#}
+{#                                    <li><a class="dropdown-item" href="#">Действие 1</a></li>#}
+{#                                    <li><a class="dropdown-item" href="#">Действие 2</a></li>#}
+{#                                </ul>#}
+{#                            </div>#}
+
+
+
                         </div>
                     </div>
                 </nav>
             </header>
         {% endif %}
-route: {{ app.request.attributes.get('_route') }}
+
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="toast align-items-center text-bg-{{ label }} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        route: {{ app.request.attributes.get('_route') }}
         <div class="container-fluid">
         {% block body %}
         {% endblock %}
