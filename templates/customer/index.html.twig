@@ -5,6 +5,10 @@
 {% block body %}
     <h1 class="mb-3">{{ title }}</h1>
 
+{{ prettyDump(is_admin, false, false) }}
+
+
+
     <div class="mb-3">
         <a href="{{ path('customer_new') }}" class="btn btn-success">Добавить клиента</a>
     </div>

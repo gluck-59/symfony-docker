@@ -25,6 +25,8 @@ final class CustomerController extends AbstractController
 
         $isAdmin = $this->isGranted('ROLE_ADMIN');
 
+prettyDump($isAdmin);
+
         if ($isAdmin) {
             $customers = $customerRepository->findBy([], ['id' => 'DESC']);
         } else {
