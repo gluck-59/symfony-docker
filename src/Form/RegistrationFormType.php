@@ -24,13 +24,13 @@ class RegistrationFormType extends AbstractType
                 'label' => 'Имя',
                 ])
             ->add('roles', ChoiceType::class, [
-                'row_attr' => ['class' => 'form-check form-check-inline'],
+                'row_attr' => ['class' => 'form-check-inline'],
                 'label' => 'Роли',
-                'mapped' => false,
+                'mapped' => true,
                 'multiple' => true,
                 'expanded' => true,
                 'choices' => [
-                    'Admin' => 'ROLE_ADMIN',
+                    'Админ' => 'ROLE_ADMIN',
                     'Manager' => 'ROLE_MANAGER',
                 ],
                 'empty_data' => [],

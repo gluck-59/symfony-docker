@@ -3,7 +3,7 @@
 {% block title %}Редактирование пользователя{% endblock %}
 
 {% block body %}
-    <h1>Редактирование пользователя {{ user.username }}</h1>
+    <h1>Редактирование {{ user.username }}</h1>
 
     {# применяем тему для этого конкретного шаблона, если нужно дополнительно #}
     {% form_theme form 'bootstrap_5_layout.html.twig' %}
@@ -23,7 +23,12 @@
         </div>
         <div class="col-md-3">
             {{ form_label(form.roles) }}
-            {{ form_widget(form.roles, {'attr': {'class': 'form-control'}}) }}
+            {% for child in form.roles %}
+                <div class="form-check form-check-inline">
+                    {{ form_widget(child, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                </div>
+            {% endfor %}
         </div>
         <div class="col-md-3">
             <br>
@@ -31,6 +36,4 @@
         </div>
     </div>
     {{ form_end(form) }}
-
-    <a href="{{ path('user_list') }}" class="btn btn-secondary mt-3">Назад к списку пользователей</a>
 {% endblock %}

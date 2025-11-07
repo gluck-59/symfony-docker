@@ -43,16 +43,8 @@ class SecurityController extends AbstractController
 
         if ($this->getUser()) {
             prettyDump($this->getUser());
-            //    prettyDump($this->isGranted('ROLE_ADMIN')); // admin
-            //    VarDumper::dump($this->isGranted('ROLE_ADMIN'));
             return $this->redirect('/customer');
-
-            //return $this->render('security/login.html.twig', [
-            //    'last_username' => $lastUsername,
-            //    'error' => $error,
-            //]);
         } else {
-//            prettyDump($error);
             prettyDump($this->getUser());
             return $this->render('security/login.html.twig', [
                 'last_username' => $lastUsername,

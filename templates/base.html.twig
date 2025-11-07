@@ -1,11 +1,11 @@
 {{ include('_header.html.twig') }}
 {% set loginArr = ['login', 'index'] %}
     <body>
-        {% if app.request.attributes.get('_route') not in loginArr %}
+    {% if app.request.attributes.get('_route') not in loginArr %}
             <header>
                 <nav class="navbar navbar-inverse navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
                     <div class="container-fluid">
-                        <a class="navbar-brand" href="#">
+                        <a class="navbar-brand" href="/">
                             <img id="logo" src="/img/logo-medved.png">
                         </a>
                         <a class="navbar-brand" href="#">{{ title|default('Навырост') }}</a>
@@ -17,10 +17,11 @@
                                 <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'main' %} active{% endif %}"><a href="/"><i class="bi bi-house-door-fill"></i> Главная</a></li>
                                 <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'request' %} active{% endif %}"><a href="/request"><i class="bi bi-list-task"></i> Заявки</a></li>
                                 <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'equipment' %} active{% endif %}"><a href="/equipment"><i class="bi bi-gear-wide-connected"></i> Обрудование</a></li>
-                                <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'customer' %} active{% endif %}"><a href="/customer"><i class="bi bi-building-gear"></i> Клиенты</a></li>
+                                <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'customer' %} active{% endif %}"><a href="{{ url('customer_index') }}"><i class="bi bi-building-gear"></i> Клиенты</a></li>
                                 <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'report' %} active{% endif %}"><a href="/report"><i class="bi bi-list-columns-reverse"></i> Отчеты</a></li>
                                 {% if is_granted('ROLE_ADMIN') %}
-                                    <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'register' %} active{% endif %}"><a href="/user/list"><i class="bi bi-person-add"></i> Юзеры</a></li>
+                                    <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'user_list' %} active{% endif %}"><a href="/user/list"><i class="bi bi-person-add"></i> Юзеры</a></li>
+                                    <li class="mx-3 my-2 {% if app.request.attributes.get('_route') == 'register' %} active{% endif %}"><a href="{{ url('phpinfo') }}"><i class="bi bi-person"></i> Phpinfo</a></li>
                                 {% endif %}
                             </ul>
                             {% if app.user %}
@@ -74,7 +75,7 @@
             {% endfor %}
         </div>
 
-        route: {{ app.request.attributes.get('_route') }}
+route: {{ app.request.attributes.get('_route') }}
         <div class="container-fluid">
         {% block body %}
         {% endblock %}

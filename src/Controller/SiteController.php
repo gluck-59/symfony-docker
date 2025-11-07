@@ -11,9 +11,19 @@ class SiteController extends AbstractController
     #[Route('site/main', name: 'main')]
     public function main(): Response
     {
+//        $this->addFlash('success', 'Test');
         return $this->render('site/main.html.twig', [
-        'message' => 'Добро пожаловать на главную страницу!',
-            'title' => 'Главная'
+        'title' => 'Главная'
         ]);
+    }
+
+    #[Route('site/pi', name: 'phpinfo')]
+    public function pi(): Response
+    {
+        ob_start();
+        phpinfo();
+        $info = ob_get_clean();
+
+        return new Response($info);
     }
 }

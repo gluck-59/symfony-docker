@@ -1,13 +1,20 @@
-console.log('jopa');
 const userPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 document.documentElement.setAttribute('data-bs-theme', userPrefersDark ? 'dark' : 'light');
 
 document.addEventListener('DOMContentLoaded', function () {
-    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-    var toastList = toastElList.map(function (toastEl) {
+    let toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    let toastList = toastElList.map(function (toastEl) {
         return new bootstrap.Toast(toastEl, {
-            autohide: false
+            autohide: true,
+            delay: 10000
         });
     });
-    toastList.forEach(toast => toast.show());
+
+
+
+
+
+    setTimeout(function (){
+        toastList.forEach(toast => toast.show());
+    }, 1000);
 });
