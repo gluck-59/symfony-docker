@@ -50,7 +50,10 @@ final class CustomerController extends AbstractController
 
         $customer = new Customer();
 
-        $form = $this->createForm(CustomerType::class, $customer);
+        $form = $this->createForm(CustomerType::class, $customer, [
+            'current_user' => $user,
+            'is_admin' => $this->isGranted('ROLE_ADMIN'),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -85,7 +88,7 @@ final class CustomerController extends AbstractController
         }
 
         return $this->render('customer/card.html.twig', [
-            'title' => 'Карточка клиента',
+            'title' => 'Клиент',
             'customer' => $customer,
             'creator_username' => $creatorUsername,
             'is_admin' => $this->isGranted('ROLE_ADMIN'),
@@ -104,7 +107,11 @@ final class CustomerController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $form = $this->createForm(CustomerType::class, $customer);
+        $form = $this->createForm(CustomerType::class, $customer, [
+            'current_customer' => $customer,
+            'current_user' => $user,
+            'is_admin' => $this->isGranted('ROLE_ADMIN'),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -126,7 +133,7 @@ final class CustomerController extends AbstractController
         if (!$user) {
             throw $this->createAccessDeniedException();
         }
-        if (!$this->isGranted('ROLE_ADMIN') && $customer->getCreator() !== $user->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && $customer->getCreator()?->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException();
         }
 

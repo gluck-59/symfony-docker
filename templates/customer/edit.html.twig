@@ -17,9 +17,9 @@
             {{ form_errors(form.data) }}
         </div>
         <div class="mb-3">
-            {{ form_label(form.parentId) }}
-            {{ form_widget(form.parentId, {'attr': {'class': 'form-control'}}) }}
-            {{ form_errors(form.parentId) }}
+            {{ form_label(form.parent) }}
+            {{ form_widget(form.parent, {'attr': {'class': 'form-control selectpicker', 'data-live-search': 'true'}}) }}
+            {{ form_errors(form.parent) }}
         </div>
         <button type="submit" class="btn btn-success">Сохранить</button>
         <a href="{{ path('customer_index') }}" class="btn btn-danger">Отмена</a>

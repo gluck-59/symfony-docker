@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CustomerRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
 
@@ -18,14 +20,23 @@ class Customer
     #[ORM\JoinColumn(nullable: false)]
     private ?User $creator = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $parentId = null;
+    #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: 'children')]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+    private ?Customer $parent = null;
+
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: Customer::class, cascade: ['remove'])]
+    private Collection $children;
 
     #[ORM\Column(length: 64)]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $data = null;
+
+    public function __construct()
+    {
+        $this->children = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -51,14 +62,43 @@ class Customer
         return $this;
     }
 
-    public function getParentId(): ?int
+    public function getParent(): ?Customer
     {
-        return $this->parentId;
+        return $this->parent;
     }
 
-    public function setParentId(?int $parentId): static
+    public function setParent(?Customer $parent): static
     {
-        $this->parentId = $parentId;
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Customer>
+     */
+    public function getChildren(): Collection
+    {
+        return $this->children;
+    }
+
+    public function addChild(Customer $child): static
+    {
+        if (!$this->children->contains($child)) {
+            $this->children->add($child);
+            $child->setParent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChild(Customer $child): static
+    {
+        if ($this->children->removeElement($child)) {
+            if ($child->getParent() === $this) {
+                $child->setParent(null);
+            }
+        }
 
         return $this;
     }

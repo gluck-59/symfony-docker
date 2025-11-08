@@ -10,11 +10,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-
-
-
-
     setTimeout(function (){
         toastList.forEach(toast => toast.show());
     }, 1000);
+
+
+    $('.selectpicker').selectpicker();
 });
