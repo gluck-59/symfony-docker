@@ -54,8 +54,8 @@ final class CustomerController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'customer_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    #[Route('/add', name: 'customer_add')]
+    public function add(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
         if (!$user) {

@@ -22,7 +22,7 @@ class SecurityController extends AbstractController
                 prettyDump($this->getUser());
             //    prettyDump($this->isGranted('ROLE_ADMIN')); // admin
             //    VarDumper::dump($this->isGranted('ROLE_ADMIN'));
-            return $this->redirect('site/main');
+            return $this->redirect('/site/main');
         } else {
 //            prettyDump($error);
 //            prettyDump($this->getUser());

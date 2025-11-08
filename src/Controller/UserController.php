@@ -16,11 +16,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
-    #[Route('user/list', name: 'user_list')]
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/user/list', name: 'user_list')]
     public function list(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
-            return $this->redirect('/index');
+            return $this->redirectToRoute('index');
         }
 
         $user = new User();
@@ -31,22 +32,16 @@ class UserController extends AbstractController
             /** @var string $password */
             $password = $form->get('password')->getData();
 
-
             // encode the plain password
             $user->setPassword($userPasswordHasher->hashPassword($user, $password));
 
-            // Roles from form (unmapped field 'roles')
             $formRoles = $form->get('roles')->getData();
             if (is_array($formRoles) && !empty($formRoles)) {
                 $normalized = [];
                 foreach ($formRoles as $role) {
-                    if (!is_string($role) || $role === '') {
-                        continue;
-                    }
+                    if (!is_string($role) || $role === '') { continue; }
                     $role = strtoupper(trim($role));
-                    if (str_starts_with($role, 'ROLE_')) {
-                        $normalized[] = $role;
-                    }
+                    if (str_starts_with($role, 'ROLE_')) { $normalized[] = $role; }
                 }
                 if (!empty($normalized)) {
                     $user->setRoles(array_values(array_unique($normalized)));
@@ -57,22 +52,19 @@ class UserController extends AbstractController
             $entityManager->flush();
 
             // do anything else you need here, like send an email
-
             return $this->redirectToRoute('user_list');
         }
 
-            $existingUsers = $userRepository->findAll();
-
+        $existingUsers = $userRepository->findAll();
 
         return $this->render('user/list.html.twig', [
             'title' => 'Юзеры',
             'existingUsers' => $existingUsers,
-            'registrationForm' => $form,
+            'registrationForm' => $form->createView(),
         ]);
     }
 
-
-
+    #[IsGranted('ROLE_ADMIN')]
     #[Route('/user/{id}/edit', name: 'user_edit')]
     public function edit(User $user, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -88,7 +80,17 @@ class UserController extends AbstractController
             }
 
             $roles = $form->get('roles')->getData();
-            $user->setRoles($roles);
+            if (is_array($roles) && !empty($roles)) {
+                $normalized = [];
+                foreach ($roles as $role) {
+                    if (!is_string($role) || $role === '') { continue; }
+                    $role = strtoupper(trim($role));
+                    if (str_starts_with($role, 'ROLE_')) { $normalized[] = $role; }
+                }
+                if (!empty($normalized)) {
+                    $user->setRoles(array_values(array_unique($normalized)));
+                }
+            }
 
 //            $em->persist($user); // при обновлении не нужно?
             $em->flush();
@@ -103,9 +105,7 @@ class UserController extends AbstractController
         ]);
     }
 
-
-
-
+    #[IsGranted('ROLE_ADMIN')]
     #[Route('/user/{id}/delete', name: 'user_delete', methods: ['POST'])]
     public function delete(User $user, Request $request, EntityManagerInterface $em): Response
     {
@@ -121,8 +121,10 @@ class UserController extends AbstractController
         return $this->redirectToRoute('user_list');
     }
 
-    #[Route('/user/change-password', name: 'change_password')]
+
+
     #[IsGranted('ROLE_USER')]
+    #[Route('/user/change-password', name: 'user_change_password')]
     public function changePassword(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ChangePasswordFormType::class);
@@ -134,8 +136,8 @@ class UserController extends AbstractController
                 return $this->redirectToRoute('login');
             }
 
-            $currentPassword = (string) $form->get('currentPassword')->getData();
-            $newPassword = (string) $form->get('newPassword')->getData();
+            $currentPassword = (string)$form->get('currentPassword')->getData();
+            $newPassword = (string)$form->get('newPassword')->getData();
 
             if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
                 $this->addFlash('error', 'Current password is incorrect.');
@@ -148,10 +150,8 @@ class UserController extends AbstractController
         }
 
         return $this->render('user/change_password.html.twig', [
-            'form' => $form,
+            'form' => $form->createView(),
             'title' => 'Смена пароля'
         ]);
     }
-
-
 }

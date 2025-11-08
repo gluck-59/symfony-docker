@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class SiteController extends AbstractController
 {
-    #[Route('site/main', name: 'main')]
+    #[Route('/site/main', name: 'main')]
     public function main(): Response
     {
 //        $this->addFlash('success', 'Test');
@@ -17,7 +17,7 @@ class SiteController extends AbstractController
         ]);
     }
 
-    #[Route('site/pi', name: 'phpinfo')]
+    #[Route('/site/pi', name: 'phpinfo')]
     public function pi(): Response
     {
         ob_start();
