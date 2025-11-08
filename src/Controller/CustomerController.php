@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
+//use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/customer')]
 final class CustomerController extends AbstractController
@@ -25,7 +25,7 @@ final class CustomerController extends AbstractController
 
         $isAdmin = $this->isGranted('ROLE_ADMIN');
 
-prettyDump($isAdmin);
+//prettyDump($isAdmin);
 
         if ($isAdmin) {
             $customers = $customerRepository->findBy([], ['id' => 'DESC']);
@@ -84,10 +84,13 @@ prettyDump($isAdmin);
                 return $this->redirectToRoute('customer_index');
             }
         }
+        $classMetadata = $em->getClassMetadata(Customer::class);
 
         return $this->render('customer/new.html.twig', [
             'title' => 'Новый клиент',
             'customer' => $customer,
+            'maxLengthData' => $classMetadata->getFieldMapping('data')['length'] ?? 255,
+            'maxLengthName' => $classMetadata->getFieldMapping('name')['length'] ?? 64,
         ]);
     }
 
@@ -123,6 +126,7 @@ prettyDump($isAdmin);
         if (!$user) {
             throw $this->createAccessDeniedException();
         }
+
         if (!$this->isGranted('ROLE_ADMIN') && $customer->getCreator() !== $user->getId()) {
             throw $this->createAccessDeniedException();
         }
@@ -144,10 +148,13 @@ prettyDump($isAdmin);
                 return $this->redirectToRoute('customer_index');
             }
         }
+        $classMetadata = $em->getClassMetadata(Customer::class);
 
         return $this->render('customer/edit.html.twig', [
             'title' => 'Редактирование клиента',
             'customer' => $customer,
+            'maxLengthData' => $classMetadata->getFieldMapping('data')['length'] ?? 255,
+            'maxLengthName' => $classMetadata->getFieldMapping('name')['length'] ?? 64,
         ]);
     }
 

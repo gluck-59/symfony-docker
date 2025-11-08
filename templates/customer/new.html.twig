@@ -7,7 +7,7 @@
     <form method="post">
         <div class="mb-3">
             <label class="form-label">Название</label>
-            <input type="text" name="name" class="form-control" value="{{ customer.name }}" required>
+            <input type="text" name="name" class="form-control"  maxlength="{{ maxLengthName }}"value="{{ customer.name }}" required>
         </div>
 {#        <div class="mb-3">#}
 {#            <label class="form-label">Parent ID</label>#}
@@ -15,9 +15,9 @@
 {#        </div>#}
         <div class="mb-3">
             <label class="form-label">Доп. данные</label>
-            <textarea name="data" class="form-control" rows="5">{{ customer.data }}</textarea>
+            <textarea name="data" class="form-control" rows="2" maxlength="{{ maxLengthData }}">{{ customer.data }}</textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Сохранить</button>
-        <a href="{{ path('customer_index') }}" class="btn btn-secondary">Отмена</a>
+        <button type="submit" class="btn btn-success">Сохранить</button>
+        <a href="{{ path('customer_index') }}" class="btn btn-danger">Отмена</a>
     </form>
 {% endblock %}

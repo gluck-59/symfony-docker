@@ -64,7 +64,7 @@ class UserController extends AbstractController
             $existingUsers = $userRepository->findAll();
 
 
-        return $this->render('user/card.html.twig', [
+        return $this->render('user/list.html.twig', [
             'title' => 'Юзеры',
             'existingUsers' => $existingUsers,
             'registrationForm' => $form,

@@ -25,7 +25,7 @@
         <dd class="col-sm-9"><pre class="mb-0">{{ customer.data }}</pre></dd>
     </dl>
 
-    <a class="btn btn-secondary" href="{{ path('customer_index') }}">Назад</a>
+    <a class="btn btn-outline-info" href="{{ path('customer_index') }}">Назад</a>
     <a class="btn btn-primary" href="{{ path('customer_edit', {id: customer.id}) }}">Редактировать</a>
     <form method="post" action="{{ path('customer_delete', {id: customer.id}) }}" class="d-inline" onsubmit="return confirm('Удалить клиента #{{ customer.id }}?');">
         <input type="hidden" name="_token" value="{{ csrf_token('delete_customer_' ~ customer.id) }}">

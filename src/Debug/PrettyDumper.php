@@ -24,10 +24,10 @@ final class PrettyDumper
 
         //@TODO refucktor
         if (($stack[0]['function'] ?? null) === 'prettyDump') {
-            $out .=  'prettyDump() из ' . ($stack[1]['file'] ?? '') . ' строка ' . ($stack[0]['line'] ?? '') . '<br>';
+            $out .=  'prettyDump() из ' . ($stack[1]['file'] ?? '') . ' строка ' . ($stack[1]['line'] ?? '') . '<br>';
         } else {
             $src = $stack[1]['args'][0] ?? ($stack[1]['file'] ?? '');
-            $out .=  'prettyDump() из ' . $src . ' строка ' . ($stack[0]['line'] ?? '') . ':<br>';
+            $out .=  'prettyDump() из ' . $src . ' строка ' . ($stack[1]['line'] ?? '') . ':<br>';
         }
 
         if (is_bool($data) || is_null($data) || empty($data)) {

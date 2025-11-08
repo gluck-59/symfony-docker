@@ -3,7 +3,7 @@
     --bs-navbar-brand-padding-y: 0;
 }
 a, button {
-    color: #0a53be;
+    /*color: #0a53be;*/
 }
 a:not(:hover), button:not(:hover) {
     text-decoration: none!important;
