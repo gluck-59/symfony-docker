@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 //use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Form\CustomerType;
 
 #[Route('/customer')]
 final class CustomerController extends AbstractController
@@ -25,32 +26,17 @@ final class CustomerController extends AbstractController
 
         $isAdmin = $this->isGranted('ROLE_ADMIN');
 
-//prettyDump($isAdmin);
-
         if ($isAdmin) {
             $customers = $customerRepository->findBy([], ['id' => 'DESC']);
         } else {
-            $customers = $customerRepository->findBy(['creator' => $user->getId()], ['id' => 'DESC']);
-        }
-
-        // Подготовим карту creatorId => username для отображения в интерфейсе
-        $creatorIds = array_unique(array_map(static fn(Customer $c) => $c->getCreator(), $customers));
-        $creators = [];
-        if (!empty($creatorIds)) {
-            $users = $userRepository->createQueryBuilder('u')
-                ->where('u.id IN (:ids)')
-                ->setParameter('ids', $creatorIds)
-                ->getQuery()->getResult();
-            foreach ($users as $u) {
-                $creators[$u->getId()] = $u->getUsername();
-            }
+            // теперь фильтрация по объекту User
+            $customers = $customerRepository->findBy(['creator' => $user], ['id' => 'DESC']);
         }
 
         return $this->render('customer/index.html.twig', [
             'title' => 'Клиенты',
             'customers' => $customers,
             'is_admin' => $isAdmin,
-            'creators' => $creators,
         ]);
     }
 
@@ -64,33 +50,21 @@ final class CustomerController extends AbstractController
 
         $customer = new Customer();
 
-        if ($request->isMethod('POST')) {
-            $name = trim((string) $request->request->get('name'));
-            $data = $request->request->get('data');
-            $parentId = $request->request->get('parentId');
+        $form = $this->createForm(CustomerType::class, $customer);
+        $form->handleRequest($request);
 
-            if ($name === '') {
-                $this->addFlash('error', 'Название обязательно');
-            } else {
-                $customer->setName($name);
-                $customer->setData($data ?: null);
-                $customer->setParentId($parentId !== null && $parentId !== '' ? (int) $parentId : 0);
-                $customer->setCreator($user->getId());
+        if ($form->isSubmitted() && $form->isValid()) {
+            $customer->setCreator($user);
+            $em->persist($customer);
+            $em->flush();
 
-                $em->persist($customer);
-                $em->flush();
-
-                $this->addFlash('success', 'Клиент создан');
-                return $this->redirectToRoute('customer_index');
-            }
+            $this->addFlash('success', 'Клиент создан');
+            return $this->redirectToRoute('customer_index');
         }
-        $classMetadata = $em->getClassMetadata(Customer::class);
 
         return $this->render('customer/new.html.twig', [
             'title' => 'Новый клиент',
-            'customer' => $customer,
-            'maxLengthData' => $classMetadata->getFieldMapping('data')['length'] ?? 255,
-            'maxLengthName' => $classMetadata->getFieldMapping('name')['length'] ?? 64,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -101,14 +75,13 @@ final class CustomerController extends AbstractController
         if (!$user) {
             throw $this->createAccessDeniedException();
         }
-        if (!$this->isGranted('ROLE_ADMIN') && $customer->getCreator() !== $user->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && $customer->getCreator()?->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException();
         }
 
         $creatorUsername = null;
         if ($this->isGranted('ROLE_ADMIN')) {
-            $creatorUser = $userRepository->find($customer->getCreator());
-            $creatorUsername = $creatorUser?->getUsername();
+            $creatorUsername = $customer->getCreator()?->getUsername();
         }
 
         return $this->render('customer/card.html.twig', [
@@ -127,34 +100,22 @@ final class CustomerController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        if (!$this->isGranted('ROLE_ADMIN') && $customer->getCreator() !== $user->getId()) {
+        if (!$this->isGranted('ROLE_ADMIN') && $customer->getCreator()?->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException();
         }
 
-        if ($request->isMethod('POST')) {
-            $name = trim((string) $request->request->get('name'));
-            $data = $request->request->get('data');
-            $parentId = $request->request->get('parentId');
+        $form = $this->createForm(CustomerType::class, $customer);
+        $form->handleRequest($request);
 
-            if ($name === '') {
-                $this->addFlash('error', 'Название обязательно');
-            } else {
-                $customer->setName($name);
-                $customer->setData($data ?: null);
-                $customer->setParentId($parentId !== null && $parentId !== '' ? (int) $parentId : 0);
-
-                $em->flush();
-                $this->addFlash('success', 'Клиент обновлён');
-                return $this->redirectToRoute('customer_index');
-            }
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'Клиент обновлён');
+            return $this->redirectToRoute('customer_index');
         }
-        $classMetadata = $em->getClassMetadata(Customer::class);
 
         return $this->render('customer/edit.html.twig', [
             'title' => 'Редактирование клиента',
-            'customer' => $customer,
-            'maxLengthData' => $classMetadata->getFieldMapping('data')['length'] ?? 255,
-            'maxLengthName' => $classMetadata->getFieldMapping('name')['length'] ?? 64,
+            'form' => $form->createView(),
         ]);
     }
 

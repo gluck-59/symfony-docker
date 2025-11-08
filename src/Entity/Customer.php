@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 class Customer
@@ -13,10 +14,11 @@ class Customer
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $creator = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $creator = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $parentId = null;
 
     #[ORM\Column(length: 64)]
@@ -37,12 +39,12 @@ class Customer
         return $this;
     }
 
-    public function getCreator(): ?int
+    public function getCreator(): ?User
     {
         return $this->creator;
     }
 
-    public function setCreator(int $creator): static
+    public function setCreator(User $creator): static
     {
         $this->creator = $creator;
 
@@ -54,7 +56,7 @@ class Customer
         return $this->parentId;
     }
 
-    public function setParentId(int $parentId): static
+    public function setParentId(?int $parentId): static
     {
         $this->parentId = $parentId;
 

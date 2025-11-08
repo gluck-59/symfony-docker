@@ -31,7 +31,7 @@
                     {% if is_admin %}<td>{{ c.id }}</td>{% endif %}
                     <td><a href="{{ path('customer_show', {id: c.id}) }}">{{ c.name }}</a></td>
 {#                    <td>{{ c.parentId }}</td>#}
-                    {% if is_admin %}<td>{{ creators[c.creator]|default('—') }}</td>{% endif %}
+                    {% if is_admin %}<td>{{ c.creator ? c.creator.username : '—' }}</td>{% endif %}
                     <td>{{ c.data }}</td>
                     <td class="text-end">
                         <a href="{{ path('customer_edit', {id: c.id}) }}" class="btn btn-sm btn-primary"><i class="bi bi-pencil-fill"></i></a>

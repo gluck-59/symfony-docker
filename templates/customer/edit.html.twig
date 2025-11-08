@@ -5,20 +5,23 @@
 {% block body %}
     <h1>{{ title }}</h1>
 
-    <form method="post">
+    {{ form_start(form) }}
         <div class="mb-3">
-            <label class="form-label">Название</label>
-            <input type="text" name="name" class="form-control" maxlength="{{ maxLengthName }}" value="{{ customer.name }}" required>
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.name) }}
         </div>
-{#        <div class="mb-3">#}
-{#            <label class="form-label">Parent ID</label>#}
-{#            <input type="number" name="parentId" class="form-control" value="{{ customer.parentId }}">#}
-{#        </div>#}
         <div class="mb-3">
-            <label class="form-label">Доп. данные</label>
-            <textarea name="data" class="form-control" rows="2" maxlength="{{ maxLengthData }}">{{ customer.data }}</textarea>
+            {{ form_label(form.data) }}
+            {{ form_widget(form.data, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.data) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.parentId) }}
+            {{ form_widget(form.parentId, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.parentId) }}
         </div>
         <button type="submit" class="btn btn-success">Сохранить</button>
         <a href="{{ path('customer_index') }}" class="btn btn-danger">Отмена</a>
-    </form>
+    {{ form_end(form) }}
 {% endblock %}
