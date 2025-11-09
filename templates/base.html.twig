@@ -17,7 +17,7 @@
                             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                 <li class="mx-3 my-2 {% if route == 'main' %} active{% endif %}"><a href="/"><i class="bi bi-house-door-fill"></i> Главная</a></li>
                                 <li class="mx-3 my-2 {% if route == 'request' %} active{% endif %}"><a href="/request"><i class="bi bi-list-task"></i> Заявки</a></li>
-                                <li class="mx-3 my-2 {% if route == 'equipment' %} active{% endif %}"><a href="/equipment"><i class="bi bi-gear-wide-connected"></i> Обрудование</a></li>
+                                <li class="mx-3 my-2 {% if route starts with 'equipment_' %} active{% endif %}"><a href="{{ url('equipment_index') }}"><i class="bi bi-gear-wide-connected"></i> Оборудование</a></li>
                                 <li class="mx-3 my-2 {% if route starts with 'customer_' %} active{% endif %}"><a href="{{ url('customer_index') }}"><i class="bi bi-building-gear"></i> Клиенты</a></li>
                                 <li class="mx-3 my-2 {% if route == 'report' %} active{% endif %}"><a href="/report"><i class="bi bi-list-columns-reverse"></i> Отчеты</a></li>
                                 {% if is_granted('ROLE_ADMIN') %}

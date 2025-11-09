@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
+use App\Entity\Equipment;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 class Customer
@@ -27,6 +28,9 @@ class Customer
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: Customer::class, cascade: ['remove'])]
     private Collection $children;
 
+    #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Equipment::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $equipment;
+
     #[ORM\Column(length: 64)]
     private ?string $name = null;
 
@@ -36,6 +40,7 @@ class Customer
     public function __construct()
     {
         $this->children = new ArrayCollection();
+        $this->equipment = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -123,6 +128,35 @@ class Customer
     public function setData(?string $data): static
     {
         $this->data = $data;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Equipment>
+     */
+    public function getEquipment(): Collection
+    {
+        return $this->equipment;
+    }
+
+    public function addEquipment(Equipment $equipment): static
+    {
+        if (!$this->equipment->contains($equipment)) {
+            $this->equipment->add($equipment);
+            $equipment->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEquipment(Equipment $equipment): static
+    {
+        if ($this->equipment->removeElement($equipment)) {
+            if ($equipment->getCustomer() === $this) {
+                $equipment->setCustomer(null);
+            }
+        }
 
         return $this;
     }
