@@ -4,30 +4,30 @@
 
 
 {% block body %}
-    <h1>{{ title }} «{{ customer.name }}»</h1>
+    <h1>Редактирование «{{ customer.name }}»</h1>
     <dl class="row">
         {% if is_admin %}
-            <dt class="col-sm-3">ID</dt>
+            <dt class="col-sm-2">ID</dt>
             <dd class="col-sm-9">{{ customer.id }}</dd>
         {% endif %}
 
-        <dt class="col-sm-3">Название</dt>
+        <dt class="col-sm-2">Название</dt>
         <dd class="col-sm-9">{{ customer.name }}</dd>
 
         {% if customer.parent is defined and customer.parent is not null %}
-            <dt class="col-sm-3">Родитель</dt>
+            <dt class="col-sm-2">Родитель</dt>
             <dd class="col-sm-9">{{ customer.parent.name}}</dd>
         {% endif %}
 
-{#        <dt class="col-sm-3">Parent ID</dt>#}
+{#        <dt class="col-sm-2">Parent ID</dt>#}
 {#        <dd class="col-sm-9">{{ customer.parentId }}</dd>#}
 
         {% if is_admin %}
-        <dt class="col-sm-3">Создатель</dt>
+        <dt class="col-sm-2">Создатель</dt>
         <dd class="col-sm-9">{{ creator_username ?? '—' }}</dd>
         {% endif %}
 
-        <dt class="col-sm-3">Данные</dt>
+        <dt class="col-sm-2">Данные</dt>
         <dd class="col-sm-9"><pre class="mb-0">{{ customer.data }}</pre></dd>
     </dl>
 
