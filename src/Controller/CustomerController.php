@@ -65,7 +65,7 @@ final class CustomerController extends AbstractController
             return $this->redirectToRoute('customer_index');
         }
 
-        return $this->render('customer/new.html.twig', [
+        return $this->render('customer/add.html.twig', [
             'title' => 'Новый клиент',
             'form' => $form->createView(),
         ]);

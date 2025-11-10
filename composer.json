@@ -14,6 +14,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.6",
         "doctrine/orm": "^3.5.3",
         "runtime/frankenphp-symfony": "^0.2.0",
+        "snapappointments/bootstrap-select": ">=1.13.18",
         "symfony/asset": "7.3.*",
         "symfony/console": "7.3.*",
         "symfony/dotenv": "7.3.*",
@@ -80,12 +81,16 @@
         "post-install-cmd": [
             "@auto-scripts",
             "rm -rf public/assets/bootstrap",
-            "cp -r vendor/twbs/bootstrap/dist public/assets/bootstrap"
+            "cp -r vendor/twbs/bootstrap/dist public/assets/bootstrap",
+            "rm -rf public/assets/bootstrap-select",
+            "cp -r assets/vendor/bootstrap-select public/assets/bootstrap-select"
         ],
         "post-update-cmd": [
             "@auto-scripts",
             "rm -rf public/assets/bootstrap",
-            "cp -r vendor/twbs/bootstrap/dist public/assets/bootstrap"
+            "cp -r vendor/twbs/bootstrap/dist public/assets/bootstrap",
+            "rm -rf public/assets/bootstrap-select",
+            "cp -r assets/vendor/bootstrap-select public/assets/bootstrap-select"
         ]
     },
     "conflict": {

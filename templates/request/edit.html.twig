@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+    <h1 class="h3 mb-3">Заявка №{{ requestEntity.id }}</h1>
+    {{ form_start(form) }}
+        <div class="mb-3 d-flex flex-wrap gap-3 align-items-center">
+            <div>
+                <span class="text-muted">Баланс:</span>
+                <span class="label label-danger" data-balance-placeholder="true">—</span>
+            </div>
+            <div class="ms-auto" style="min-width: 220px;">
+                <div class="d-flex align-items-center gap-2">
+                    {{ form_label(form.status) }}
+                    {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                </div>
+            </div>
+        </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Работы</h6>
+                    <div class="fw-semibold">{{ requestEntity.name }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Оборудование</h6>
+                    <div class="fw-semibold">{{ requestEntity.equipment.name }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Заказчик</h6>
+                    <div class="fw-semibold">{{ requestEntity.customer.name }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Расход / приход</h5>
+            <div data-flow-placeholder="true">—</div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <button class="btn btn-danger paymentEdit" data-direction="0" data-request-id="{{ requestEntity.id }}" data-modal-name="Работа: расход" data-bs-toggle="modal" data-bs-target="#modalPrihodRashod">Работа: расход</button>
+        <button class="btn btn-danger paymentEdit" data-direction="1" data-request-id="{{ requestEntity.id }}" data-modal-name="Накл.: расход" data-bs-toggle="modal" data-bs-target="#modalPrihodRashod">Накл.: расход</button>
+        <button class="btn btn-success paymentEdit" data-direction="0" data-request-id="{{ requestEntity.id }}" data-modal-name="Работа: приход" data-bs-toggle="modal" data-bs-target="#modalPrihodRashod">Работа: приход</button>
+        <button class="btn btn-success paymentEdit" data-direction="0" data-request-id="{{ requestEntity.id }}" data-modal-name="Накл: приход" data-bs-toggle="modal" data-bs-target="#modalPrihodRashod">Накл: приход</button>
+    </div>
+
+        <div class="mb-4">
+            <label class="form-label">Заметки</label>
+            {{ form_row(form.notes, {'label': false}) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    {{ form_end(form) }}
+
+    <section class="mb-4">
+        <h5>История</h5>
+        <div data-history-placeholder="true">—</div>
+    </section>
+{% endblock %}
