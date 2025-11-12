@@ -47,7 +47,14 @@
                                             {{ request.name }}
                                         </a>
                                     </td>
-                                    <td>—</td>
+                                    {% set requestBalanceRaw = request_balances[request.id]|default(0) %}
+                                    {% set requestBalanceRub = (requestBalanceRaw / 100)|money_rub %}
+                                    {% set badgeClass = requestBalanceRaw > 0 ? 'bg-success' : (requestBalanceRaw < 0 ? 'bg-danger' : 'bg-secondary') %}
+                                    <td>
+                                        <span class="badge {{ badgeClass }}">
+                                            {{ requestBalanceRub }}
+                                        </span>
+                                    </td>
                                     <td>{{ request.created ? request.created|date('d.m.Y H:i') : '—' }}
                                     <br><span class="text-muted">{{ request.updated ? request.updated|date('d.m.Y H:i') : '—' }}</span>
                                     </td>

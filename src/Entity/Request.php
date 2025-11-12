@@ -2,8 +2,11 @@
 
 namespace App\Entity;
 
+use App\Entity\Payment;
 use App\Repository\RequestRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Customer;
@@ -45,11 +48,19 @@ class Request
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
+    /**
+     * @var Collection<int, Payment>
+     */
+    #[ORM\OneToMany(mappedBy: 'request', targetEntity: Payment::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['created' => 'DESC', 'id' => 'DESC'])]
+    private Collection $payments;
+
     public function __construct()
     {
         $now = new DateTimeImmutable();
         $this->created = $now;
         $this->updated = $now;
+        $this->payments = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -155,6 +166,35 @@ class Request
     public function setNotes(?string $notes): self
     {
         $this->notes = $notes;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Payment>
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payment $payment): self
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setRequest($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payment $payment): self
+    {
+        if ($this->payments->removeElement($payment)) {
+            if ($payment->getRequest() === $this) {
+                $payment->setRequest(null);
+            }
+        }
 
         return $this;
     }

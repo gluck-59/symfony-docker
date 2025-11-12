@@ -1,5 +1,14 @@
-const userPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const prefersDarkMedia = window.matchMedia('(prefers-color-scheme: dark)');
+const userPrefersDark = prefersDarkMedia.matches;
 document.documentElement.setAttribute('data-bs-theme', userPrefersDark ? 'dark' : 'light');
+
+applyTableHeadTheme(userPrefersDark);
+
+prefersDarkMedia.addEventListener('change', (event) => {
+    const isDark = event.matches;
+    document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+    applyTableHeadTheme(isDark);
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     let toastElList = [].slice.call(document.querySelectorAll('.toast'));
@@ -16,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     initRequestFormDynamicEquipment();
+    applyTableHeadTheme(document.documentElement.getAttribute('data-bs-theme') === 'dark');
 });
 
 function initRequestFormDynamicEquipment() {
@@ -73,7 +83,6 @@ function initRequestFormDynamicEquipment() {
         });
         setOptions(options, false, placeholderText);
     }
-
     function handleError(text) {
         showPlaceholder(text);
     }
@@ -89,8 +98,8 @@ function initRequestFormDynamicEquipment() {
 
         fetch(requestUrl, {
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+                'X-Requested-With': 'XMLHttpRequest',
+            },
         })
             .then(function (response) {
                 if (!response.ok) {
@@ -131,4 +140,19 @@ function initRequestFormDynamicEquipment() {
     } else if (equipmentSelect.dataset.disableAutoLoad === '1') {
         loadEquipment(customerSelect.value);
     }
+}
+
+function applyTableHeadTheme(isDarkMode) {
+    const theads = document.querySelectorAll('table thead');
+    const darkClass = 'table-dark';
+    const lightClass = 'table-light';
+
+    theads.forEach((thead) => {
+        thead.classList.remove(isDarkMode ? lightClass : darkClass);
+        if (isDarkMode) {
+            thead.classList.add(darkClass);
+        } else {
+            thead.classList.add(lightClass);
+        }
+    });
 }

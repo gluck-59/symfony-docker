@@ -9,6 +9,7 @@ use App\Form\RequestCreateType;
 use App\Form\RequestEditType;
 use App\Repository\CustomerRepository;
 use App\Repository\EquipmentRepository;
+use App\Repository\PaymentRepository;
 use App\Repository\RequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,7 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class RequestController extends AbstractController
 {
     #[Route('', name: 'request_index', methods: ['GET'])]
-    public function index(RequestRepository $requestRepository): Response
+    public function index(RequestRepository $requestRepository, PaymentRepository $paymentRepository): Response
     {
         $user = $this->getUser();
         if (!$user) {
@@ -35,10 +36,14 @@ final class RequestController extends AbstractController
             ? $requestRepository->findAllOrdered()
             : $requestRepository->findForUser($user);
 
+        $requestIds = array_map(static fn (RequestEntity $request): int => $request->getId(), $requests);
+        $requestBalances = $paymentRepository->getSumByRequestIds($requestIds);
+
         return $this->render('request/index.html.twig', [
             'title' => 'Заявки',
             'requests' => $requests,
             'is_admin' => $isAdmin,
+            'request_balances' => $requestBalances,
         ]);
     }
 
@@ -101,7 +106,8 @@ final class RequestController extends AbstractController
     public function edit(
         Request $httpRequest,
         RequestEntity $requestEntity,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        PaymentRepository $paymentRepository
     ): Response {
         $user = $this->getUser();
         if (!$user) {
@@ -123,10 +129,15 @@ final class RequestController extends AbstractController
             return $this->redirectToRoute('request_edit', ['id' => $requestEntity->getId()]);
         }
 
+        $payments = $paymentRepository->findByRequest($requestEntity);
+        $paymentTotals = $paymentRepository->getTotalsByRequest($requestEntity);
+
         return $this->render('request/edit.html.twig', [
             'title' => 'Редактирование',
             'form' => $form->createView(),
             'requestEntity' => $requestEntity,
+            'payments' => $payments,
+            'paymentTotals' => $paymentTotals,
         ]);
     }
 
