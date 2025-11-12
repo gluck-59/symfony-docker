@@ -124,7 +124,7 @@ final class RequestController extends AbstractController
         }
 
         return $this->render('request/edit.html.twig', [
-            'title' => 'Редактирование заявки',
+            'title' => 'Редактирование',
             'form' => $form->createView(),
             'requestEntity' => $requestEntity,
         ]);

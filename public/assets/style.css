@@ -71,3 +71,12 @@ a:not(:hover), button:not(:hover) {
     right: 0;
     margin: 0;
 }
+
+/*request edit*/
+#prihod-rashod .btn.paymentEdit {
+    font-size: 1.5em;
+    padding: .7em 6px;
+    margin: 2px 0;
+    height: 70px;
+    width: 110px;
+}

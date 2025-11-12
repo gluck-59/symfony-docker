@@ -8,7 +8,7 @@
     <div class="row">
         <div class="d-inline-grid">
             <div class="col-12 col-lg-3">
-                <button type="button" class="w-100 mb-2 btn btn-success btn-lg btn-block btn-open-modal"  data-toggle="modal" data-target="#modal-request">Новая заявка</button>
+                <a type="button" href="{{ path('request_add') }}" class="w-100 mb-2 btn btn-success btn-lg btn-block btn-open-modal">Новая заявка</a>
 <!--                <button type="button" class="btn btn-warning btn-lg btn-block btn-open-modal"  data-toggle="modal" data-direction="1" data-target="#modalAutoDistribution">Авторазноска платежа&nbsp;&beta;</button>-->
                 <button type="button" class="w-100 mb-2 btn btn-warning btn-lg btn-block btn-open-modal"  data-toggle="modal" data-request-id="" data-direction="1" data-target="#modalPrihodRashod">Новый приход</button>
                 <button type="button" class="w-100 mb-2 btn btn-danger btn-lg btn-block btn-open-modal"  data-toggle="modal" data-request-id="" data-direction="0" data-target="#modalPrihodRashod">Новый расход</button>
