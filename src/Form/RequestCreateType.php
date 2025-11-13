@@ -35,7 +35,7 @@ class RequestCreateType extends AbstractType
                 'class' => Customer::class,
                 'choice_label' => 'name',
                 'label' => 'Клиент',
-                'placeholder' => 'выберите клиента',
+                'placeholder' => 'Клиент',
                 'required' => true,
                 'query_builder' => function (EntityRepository $repository) use ($options) {
                     $qb = $repository->createQueryBuilder('c')->orderBy('c.name', 'ASC');

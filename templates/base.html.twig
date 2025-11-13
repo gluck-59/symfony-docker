@@ -3,7 +3,7 @@
 {% set route = app.request.attributes.get('_route') %}
     <body>
     {% if route not in loginArr %}
-            <header>
+            <header class="mb-4">
                 <nav class="navbar navbar-inverse navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
                     <div class="container-fluid">
                         <a class="navbar-brand" href="/">
@@ -76,7 +76,7 @@
             {% endfor %}
         </div>
 
-route: {{ route }}
+{#route: {{ route }}#}
         <div class="container-fluid">
         {% block body %}
         {% endblock %}
