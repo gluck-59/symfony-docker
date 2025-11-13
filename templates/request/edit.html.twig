@@ -4,18 +4,18 @@
 
 {% block body %}
     {% set balanceRaw = paymentTotals.income|default(0) + paymentTotals.expense|default(0) %}
-    {% set balanceClass = balanceRaw > 0 ? 'bg-success' : (balanceRaw < 0 ? 'bg-danger' : 'bg-secondary') %}
+    {% set balanceClass = balanceRaw > 0 ? 'bg-success' : 'bg-danger' %}
     {% set balanceText = (balanceRaw / 100)|money_rub %}
 
     {{ form_start(form) }}
     {{ form_widget(form.name, {'attr': {'style': 'display: none'}}) }}
-    <h1 class="h3 d-flex justify-content-start align-items-start gap-2 mb-3">{{ requestEntity.id }}.&nbsp;<span id="requestTitle" class="d-inline-flex align-items-center gap-2" contenteditable="true" data-request-title="true">{{ requestEntity.name }}</span><i class="bi bi-pencil-square text-secondary" style="font-size: small"></i>&nbsp;<span id="requestBalance" class="badge {{ balanceClass }}">{{ balanceText }}</span>&nbsp;<span>{{ form_widget(form.status, {'attr': {'class': 'btn btn-primary dropdown-toggle'}}) }}</span></h1>
+    <h1 class="h3 d-flex justify-content-start align-items-start gap-2 mb-3">{{ requestEntity.id }}.&nbsp;<span id="requestTitle" class="d-inline-flex align-items-center gap-2" contenteditable="true" data-request-title="true">{{ requestEntity.name }}</span><i class="bi bi-pencil-square text-secondary" style="font-size: small"></i>&nbsp;<span id="requestBalance" class="badge {{ balanceClass }}">{{ balanceText }}</span>&nbsp;<span>{{ form_widget(form.status, {'attr': {'class': 'badge bg-primary dropdown-toggle'}}) }}</span></h1>
 
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="">
                 <h6 class="text-muted">Оборудование</h6>
-                <div class="">{{ requestEntity.equipment.name }} <small class="text-muted">({{ requestEntity.equipment.city }} {{ requestEntity.equipment.address }})</small></div>
+                <div class="">{{ requestEntity.equipment.name }} <small class="text-muted">{% if requestEntity.equipment.city != '' or requestEntity.equipment.address != '' %} ({{ requestEntity.equipment.city }} {{ requestEntity.equipment.address }}) {% endif %}</small></div>
                 <div class="">{{ requestEntity.equipment.mark }}</div>
             </div>
         </div>
@@ -142,7 +142,7 @@
             const paymentNoteInput = document.querySelector('#paymentModalNote');
             const paymentModalEl = document.getElementById('modalPrihodRashod');
             const paymentKeyboardKeys = document.querySelectorAll('#keyboard .btn.key');
-            const paymentCalculateButton = document.querySelector('.btn.calculate');
+            const paymentCalculateButtons = document.querySelectorAll('.btn.calculate');
             const paymentDeleteButtons = document.querySelectorAll('[data-payment-delete]');
             const paymentSumInputs = document.querySelectorAll('input[data-payment-id]');
             const paymentExpenseEl = document.querySelector('[data-payment-expense]');
@@ -297,8 +297,8 @@
                 });
             });
 
-            if (paymentCalculateButton) {
-                paymentCalculateButton.addEventListener('click', async (event) => {
+            paymentCalculateButtons.forEach((calculateButton) => {
+                calculateButton.addEventListener('click', async (event) => {
                     event.preventDefault();
 
                     if (!currentPaymentMeta || !paymentAmountInput) {
@@ -338,7 +338,7 @@
                         console.error('Не удалось сохранить платеж', error);
                     }
                 });
-            }
+            });
 
             paymentDeleteButtons.forEach((button) => {
                 button.addEventListener('click', async (event) => {
