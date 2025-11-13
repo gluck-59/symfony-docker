@@ -5,7 +5,7 @@
 
 {% block body %}
     <h1>Редактирование «{{ customer.name }}»</h1>
-    <dl class="row">
+    <dl class="row mb-3">
         {% if is_admin %}
             <dt class="col-sm-2">ID</dt>
             <dd class="col-sm-9">{{ customer.id }}</dd>
@@ -32,7 +32,7 @@
     </dl>
 
     {% set equipmentList = customer.equipment %}
-    <div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="d-flex justify-content-start mt-4 mb-4 gap-3">
         <h3 class="mb-0">Оборудование ({{ equipmentList|length }})</h3>
         <a href="{{ path('equipment_add') }}" class="btn btn-sm btn-success">Добавить оборудование</a>
     </div>

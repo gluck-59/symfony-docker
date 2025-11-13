@@ -142,14 +142,11 @@
             const paymentNoteInput = document.querySelector('#paymentModalNote');
             const paymentModalEl = document.getElementById('modalPrihodRashod');
             const paymentKeyboardKeys = document.querySelectorAll('#keyboard .btn.key');
-            const paymentCalculateButtons = document.querySelectorAll('.btn.calculate');
             const paymentDeleteButtons = document.querySelectorAll('[data-payment-delete]');
             const paymentSumInputs = document.querySelectorAll('input[data-payment-id]');
             const paymentExpenseEl = document.querySelector('[data-payment-expense]');
             const paymentIncomeEl = document.querySelector('[data-payment-income]');
             const paymentBalanceEl = document.querySelector('#requestBalance');
-
-            let currentPaymentMeta = null;
 
             const rubFormatter = new Intl.NumberFormat('ru-RU', {
                 style: 'currency',
@@ -251,18 +248,13 @@
 
             paymentButtons.forEach((button) => {
                 button.addEventListener('click', () => {
-                    currentPaymentMeta = {
-                        requestId: button.dataset.requestId ?? '',
-                        type: button.dataset.type ?? '0',
-                        direction: button.dataset.direction ?? '1',
-                    };
-
+                    const direction = button.dataset.direction ?? '1';
                     if (paymentModalTitle) {
                         const title = button.dataset.modalName ?? 'Платёж';
                         paymentModalTitle.textContent = title;
                     }
 
-                    applyDirectionColor(currentPaymentMeta.direction);
+                    applyDirectionColor(direction);
 
                     if (paymentAmountInput) {
                         paymentAmountInput.value = '';
@@ -294,49 +286,6 @@
 
                     const char = String.fromCharCode(keyCode);
                     paymentAmountInput.value = `${paymentAmountInput.value ?? ''}${char}`;
-                });
-            });
-
-            paymentCalculateButtons.forEach((calculateButton) => {
-                calculateButton.addEventListener('click', async (event) => {
-                    event.preventDefault();
-
-                    if (!currentPaymentMeta || !paymentAmountInput) {
-                        return;
-                    }
-
-                    const payload = {
-                        _token: paymentCreateToken,
-                        requestId: Number.parseInt(currentPaymentMeta.requestId ?? '0', 10),
-                        type: Number.parseInt(currentPaymentMeta.type ?? '0', 10),
-                        direction: Number.parseInt(currentPaymentMeta.direction ?? '1', 10),
-                        sum: paymentAmountInput.value ?? '',
-                        note: paymentNoteInput?.value ?? null,
-                    };
-
-                    if (!payload.requestId || payload.sum === '') {
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(paymentCreateUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            body: JSON.stringify(payload),
-                        });
-
-                        if (!response.ok) {
-                            console.error('Ошибка при сохранении платежа', await response.text());
-                            return;
-                        }
-
-                        window.location.reload();
-                    } catch (error) {
-                        console.error('Не удалось сохранить платеж', error);
-                    }
                 });
             });
 

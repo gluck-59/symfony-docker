@@ -1,3 +1,6 @@
+{% set modalPaymentRequests = paymentRequests|default([]) %}
+{% set modalShowMainFields = showExtraFields|default(false) %}
+
 <div class="modal fade" id="modalPrihodRashod" tabindex="-1" aria-labelledby="modalPrihodRashodLabel">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -6,6 +9,35 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" data-payment-modal-body="true">
+                <div class="mb-3 {{ modalShowMainFields ? '' : 'd-none' }}" data-payment-main-fields="true">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-12 col-lg-7">
+                            <label for="paymentModalRequestSelect" class="form-label">Заявка</label>
+                            <select
+                                id="paymentModalRequestSelect"
+                                class="form-select"
+                                data-payment-request-select="true"
+                                data-live-search="true"
+{#                                data-show-subtext="true"#}
+                            >
+                                <option value="" selected disabled>Выберите заявку</option>
+                                {% for requestItem in modalPaymentRequests %}
+                                    <option value="{{ requestItem.id }}" data-subtext="{{ requestItem.customer }}">{{ requestItem.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-5">
+                            <span class="form-label d-block">Статья</span>
+                            <div class="btn-group" role="group" aria-label="Тип платежа">
+                                <input type="radio" class="btn-check" name="paymentModalType" id="paymentModalTypeWork" value="1" autocomplete="off" data-payment-type-option="true" checked>
+                                <label class="btn btn-outline-success" for="paymentModalTypeWork">Работа</label>
+
+                                <input type="radio" class="btn-check" name="paymentModalType" id="paymentModalTypeOverhead" value="0" autocomplete="off" data-payment-type-option="true">
+                                <label class="btn btn-outline-warning" for="paymentModalTypeOverhead">Накл.</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="mb-3">
                     <label for="paymentModalAmount" class="form-label">Сумма</label>
                     <input
@@ -54,24 +86,248 @@
                         name="note"
                         maxlength="14"
                         data-payment-note="true"
-                    >
                 </div>
             </div>
         </div>
     </div>
 </div>
-{#<script>#}
-{#    /** экранная клава */#}
-{#    // покрасим кнопки#}
-{#    let color = (button.data('direction') == 0 ? 'rgba(193 84 84 / 60%)' : 'rgba(82 169 82 / 60%)');#}
-{#    $('.row-fluid > a.btn').css('border-color', color);#}
-{#    sumInput.css('border-color', color)#}
-{#    sumInput.css('box-shadow', 'none')#}
 
-{#    // отработаем нажатия#}
-{#    $('#keyboard .row-fluid .btn.key').on('click', function (event) {#}
-{#        // let keyboard = $(event.currentTarget);#}
-{#        sumInput.val($('.sum').val() + $(event.currentTarget).text())#}
-{#    })#}
-{#    /** /экранная клава */#}
-{#</script>#}
+{% block payment_modal_script %}
+    <script>
+        (function () {
+            const initPaymentModal = () => {
+                const paymentModalEl = document.getElementById('modalPrihodRashod');
+                if (!paymentModalEl) {
+                    return;
+                }
+
+                const requestSelect = paymentModalEl.querySelector('[data-payment-request-select="true"]');
+                const extraFields = paymentModalEl.querySelector('[data-payment-main-fields="true"]');
+                const typeInputs = paymentModalEl.querySelectorAll('[data-payment-type-option="true"]');
+                const amountInput = paymentModalEl.querySelector('[data-payment-amount="true"]');
+                const noteInput = paymentModalEl.querySelector('[data-payment-note="true"]');
+                const calculateButtons = paymentModalEl.querySelectorAll('.btn.calculate');
+                const keyboardKeys = paymentModalEl.querySelectorAll('#keyboard .btn.key');
+
+                const paymentCreateUrl = '{{ path('payment_create')|e('js') }}';
+                const paymentCreateToken = '{{ csrf_token('payment_create')|e('js') }}';
+
+                const showToast = (message, type = 'success') => {
+                    const container = document.querySelector('.toast-container');
+                    if (!container) {
+                        console.info(`[toast:${type}]`, message);
+                        return;
+                    }
+
+                    const toastEl = document.createElement('div');
+                    toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+                    toastEl.role = 'alert';
+                    toastEl.ariaLive = 'assertive';
+                    toastEl.ariaAtomic = 'true';
+
+                    toastEl.innerHTML = `
+                        <div class="d-flex">
+                            <div class="toast-body">${message}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    `;
+
+                    container.appendChild(toastEl);
+
+                    const toastInstance = window.bootstrap?.Toast
+                        ? window.bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 4000 })
+                        : null;
+
+                    if (toastInstance) {
+                        toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+                        toastInstance.show();
+                    } else {
+                        toastEl.classList.add('show');
+                        setTimeout(() => toastEl.remove(), 4000);
+                    }
+                };
+
+                const meta = {
+                    direction: 1,
+                };
+
+                const applyDirectionColor = (direction) => {
+                    if (!amountInput) {
+                        return;
+                    }
+
+                    const color = direction === 0 ? 'rgba(193, 84, 84, 0.6)' : 'rgba(82, 169, 82, 0.6)';
+                    amountInput.style.borderColor = color;
+                    keyboardKeys.forEach((keyButton) => {
+                        keyButton.style.backgroundColor = color;
+                        keyButton.style.borderColor = color;
+                    });
+                };
+
+                const refreshSelectPicker = () => {
+                    if (!requestSelect || !requestSelect.classList.contains('selectpicker')) {
+                        return;
+                    }
+
+                    if (window.jQuery && typeof window.jQuery.fn.selectpicker === 'function') {
+                        window.jQuery(requestSelect).selectpicker('render');
+                        window.jQuery(requestSelect).selectpicker('refresh');
+                    }
+                };
+
+                paymentModalEl.addEventListener('show.bs.modal', (event) => {
+                    const trigger = event.relatedTarget;
+                    const directionRaw = trigger?.dataset.direction ?? '1';
+                    meta.direction = Number.parseInt(directionRaw, 10);
+
+                    if (trigger?.dataset.paymentSource === 'main') {
+                        extraFields?.classList.remove('d-none');
+                        paymentModalEl.dataset.paymentSource = 'main';
+                        refreshSelectPicker();
+                    } else {
+                        extraFields?.classList.add('d-none');
+                        paymentModalEl.dataset.paymentSource = 'request';
+                    }
+
+                    paymentModalEl.dataset.requestId = trigger?.dataset.requestId ?? '';
+                    paymentModalEl.dataset.type = trigger?.dataset.type ?? '';
+
+                    if (requestSelect) {
+                        requestSelect.value = '';
+                    }
+
+                    if (typeInputs.length > 0) {
+                        typeInputs.forEach((input, index) => {
+                            input.checked = index === 0;
+                        });
+                    }
+
+                    if (amountInput) {
+                        amountInput.value = '';
+                    }
+
+                    if (noteInput) {
+                        noteInput.value = '';
+                    }
+
+                    applyDirectionColor(meta.direction);
+                });
+
+                calculateButtons.forEach((button) => {
+                    button.addEventListener('click', async (event) => {
+                        event.preventDefault();
+
+                        if (!amountInput) {
+                            return;
+                        }
+
+                        const sumValue = (amountInput.value ?? '').trim();
+                        if (sumValue === '') {
+                            return;
+                        }
+
+                        let requestId = 0;
+                        let paymentType = 1;
+
+                        if (paymentModalEl.dataset.paymentSource === 'main') {
+                            requestId = Number.parseInt(requestSelect?.value ?? '', 10);
+                            if (!Number.isInteger(requestId) || requestId <= 0) {
+                                showToast('Необходимо указать заявку', 'error');
+                                return;
+                            }
+
+                            const checkedType = Array.from(typeInputs).find((input) => input.checked);
+                            paymentType = Number.parseInt(checkedType?.value ?? '1', 10);
+                        } else {
+                            requestId = Number.parseInt(paymentModalEl.dataset.requestId ?? '0', 10);
+                            paymentType = Number.parseInt(paymentModalEl.dataset.type ?? '1', 10);
+                        }
+
+                        if (!Number.isInteger(requestId) || requestId <= 0) {
+                            return;
+                        }
+
+                        const payload = {
+                            _token: paymentCreateToken,
+                            requestId,
+                            type: paymentType,
+                            direction: meta.direction,
+                            sum: sumValue,
+                            note: noteInput?.value ?? null,
+                        };
+
+                        try {
+                            const response = await fetch(paymentCreateUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: JSON.stringify(payload),
+                            });
+
+                            if (!response.ok) {
+                                console.error('Ошибка при сохранении платежа', await response.text());
+                                showToast('Не удалось сохранить платеж', 'danger');
+                                return;
+                            }
+
+                            let responseData = null;
+                            try {
+                                responseData = await response.json();
+                            } catch (parseError) {
+                                console.warn('Не удалось разобрать ответ при сохранении платежа', parseError);
+                            }
+
+                            showToast('Платеж сохранен', 'success');
+
+                            if (paymentModalEl.dataset.paymentSource === 'request') {
+                                window.location.reload();
+                                return;
+                            }
+
+                            const modalInstance = window.bootstrap?.Modal
+                                ? window.bootstrap.Modal.getOrCreateInstance(paymentModalEl)
+                                : null;
+
+                            modalInstance?.hide();
+
+                            const paymentCreatedEvent = new CustomEvent('payment:created', {
+                                detail: responseData,
+                                bubbles: true,
+                            });
+
+                            paymentModalEl.dispatchEvent(paymentCreatedEvent);
+                        } catch (error) {
+                            console.error('Не удалось сохранить платеж', error);
+                            showToast('Не удалось сохранить платеж', 'danger');
+                        }
+                    });
+                });
+
+                keyboardKeys.forEach((keyButton) => {
+                    keyButton.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        if (!amountInput) {
+                            return;
+                        }
+
+                        const keyCode = Number.parseInt(keyButton.dataset.key ?? '', 10);
+                        if (Number.isNaN(keyCode)) {
+                            return;
+                        }
+
+                        const char = String.fromCharCode(keyCode);
+                        amountInput.value = `${amountInput.value ?? ''}${char}`;
+                    });
+                });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initPaymentModal);
+            } else {
+                initPaymentModal();
+            }
+        })();
+    </script>
+{% endblock %}
