@@ -8,7 +8,7 @@ we recommend using [_template-sync_](https://github.com/coopTilleuls/template-sy
    <!-- markdownlint-disable MD013 -->
 
    ```console
-   curl -sSL https://raw.githubusercontent.com/coopTilleuls/template-sync/main/template-sync.sh | sh -s -- https://github.com/dunglas/symfony-docker
+   curl -sSL https://raw.githubusercontent.com/coopTilleuls/template-sync/main/template-sync.sh | sh -s -- https://github.com/gluck-59/navyrost
    ```
 
    <!-- markdownlint-enable MD013 -->

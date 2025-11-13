@@ -11,7 +11,7 @@ final class Version20251109214900 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Создание таблицы request для заявок на ремонт оборудования';
+        return 'CREATE TABLE request';
     }
 
     public function isTransactional(): bool

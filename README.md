@@ -1,9 +1,50 @@
+# На вырост CRM
+
+мини-CRM для самых маленьких (с уклоном в ремонт некоего оборудования)  
+Дока для прогеров живет в `/docs`.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+#### Built with:
+- **Docker Compose** 
+- **PHP 8.4** 
+- **MySQL 8**
+- **Symfony 7.3**
+- **Doctrine ORM 3** 
+- **FrankenPHP + Caddy**
+- **Twig** 
+- **Bootstrap 5** 
+- **JS/JQ** (клиентская логика)
+
+## Использование
+- **войдите**
+- **создайте Клиента**
+- **создайте его Оборудование**
+- **создайте Заявку на ремонт этого Оборудования**
+- **внутри заявки добавьте доходы-расходы по ней**
+- **снимите предложенные демо-отчеты**
+
+## Структура
+- **стр входа**
+- **заказчики**
+- **оборудование**
+- **заявки на ремонт**
+- **платежи**
+- **заготовка для наиболее востребованных отчетов**
+
+## Примечаение
+Разделение по пользователям: созданные пользователем Клиенты, их Оборудование и Заявки видны только ему.
+
+В бесплатной версии нет разделения по ролям пользователей и логирования действий пользователей.
+
+Верстка для мобильных.
+
 # Symfony Docker
 
 A [Docker](https://www.docker.com/)-based installer and runtime for the [Symfony](https://symfony.com) web framework,
 with [FrankenPHP](https://frankenphp.dev) and [Caddy](https://caddyserver.com/) inside!
 
-![CI](https://github.com/dunglas/symfony-docker/workflows/CI/badge.svg)
+![CI](https://github.com/gluck-59/navyrost/workflows/CI/badge.svg)
 
 ## Getting Started
 

@@ -2,7 +2,7 @@
 
 It's also possible to use Symfony Docker with existing projects!
 
-First, [download this skeleton](https://github.com/dunglas/symfony-docker).
+First, [download this skeleton](https://github.com/gluck-59/navyrost).
 
 If you cloned the Git repository, be sure to not copy the `.git` directory
 to prevent conflicts with the `.git` directory already in your existing project.
@@ -17,7 +17,7 @@ git archive --format=tar HEAD | tar -xC my-existing-project/
 If you downloaded the skeleton as a ZIP you can just copy the extracted files:
 
 ```console
-cp -Rp symfony-docker/. my-existing-project/
+cp -Rp navyrost/. my-existing-project/
 ```
 
 Enable the Docker support of Symfony Flex:

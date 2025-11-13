@@ -14,24 +14,22 @@ final class Version20251108203118 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'ALTER TABLE customer';
     }
 
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE customer CHANGE parent_id parent_id INT DEFAULT NULL');
-//        $this->addSql('ALTER TABLE customer ADD CONSTRAINT FK_81398E0961220EA6 FOREIGN KEY (creator_id) REFERENCES user (id)');
         $this->addSql('CREATE INDEX IDX_81398E09A977936C ON customer (parent_id)');
         $this->addSql('ALTER TABLE customer ADD CONSTRAINT FK_81398E09A977936C FOREIGN KEY (parent_id) REFERENCES customer (id) ON DELETE CASCADE');
-        $this->addSql('CREATE INDEX IDX_81398E0961220EA6 ON customer (creator_id)');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-//        $this->addSql('ALTER TABLE customer DROP FOREIGN KEY FK_81398E0961220EA6');
-        $this->addSql('DROP INDEX IDX_81398E0961220EA6 ON customer');
+        $this->addSql('ALTER TABLE customer DROP FOREIGN KEY FK_81398E09A977936C');
+        $this->addSql('DROP INDEX IDX_81398E09A977936C ON customer');
         $this->addSql('ALTER TABLE customer CHANGE parent_id parent_id INT NOT NULL');
     }
 }
