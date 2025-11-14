@@ -18,7 +18,7 @@ class Customer
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $creator = null;
 
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: 'children')]
