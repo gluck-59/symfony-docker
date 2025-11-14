@@ -179,8 +179,13 @@ final class PaymentController extends AbstractController
             'typeLabel' => $payment->getTypeLabel(),
             'sum' => $payment->getSum(),
             'sumRub' => $this->formatAmountRub($payment->getSum()),
+            'note' => $payment->getNote(),
             'created' => $payment->getCreated()?->format('d.m.Y H:i'),
             'totals' => $this->formatTotals($totals),
+            'links' => [
+                'update' => $this->generateUrl('payment_update_sum', ['id' => $payment->getId()]),
+                'delete' => $this->generateUrl('payment_delete', ['id' => $payment->getId()]),
+            ],
             'csrf' => [
                 'update' => $this->csrfTokenManager->getToken('payment_update_' . $payment->getId())->getValue(),
                 'delete' => $this->csrfTokenManager->getToken('payment_delete_' . $payment->getId())->getValue(),

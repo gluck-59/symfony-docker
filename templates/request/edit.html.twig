@@ -118,7 +118,7 @@
                                 </tr>
                             {% endfor %}
                         {% else %}
-                            <tr>
+                            <tr data-payment-empty="true">
                                 <td colspan="4" class="text-center text-muted">Платежей пока нет</td>
                             </tr>
                         {% endif %}
@@ -133,20 +133,45 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const paymentCreateUrl = '{{ path('payment_create')|e('js') }}';
-            const paymentCreateToken = '{{ csrf_token('payment_create')|e('js') }}';
-
             const paymentButtons = document.querySelectorAll('.paymentEdit');
             const paymentModalTitle = document.querySelector('[data-payment-modal-title="true"]');
             const paymentAmountInput = document.querySelector('#paymentModalAmount');
             const paymentNoteInput = document.querySelector('#paymentModalNote');
             const paymentModalEl = document.getElementById('modalPrihodRashod');
             const paymentKeyboardKeys = document.querySelectorAll('#keyboard .btn.key');
-            const paymentDeleteButtons = document.querySelectorAll('[data-payment-delete]');
-            const paymentSumInputs = document.querySelectorAll('input[data-payment-id]');
+            const paymentHistoryTable = document.querySelector('#paymentHistory tbody');
             const paymentExpenseEl = document.querySelector('[data-payment-expense]');
             const paymentIncomeEl = document.querySelector('[data-payment-income]');
             const paymentBalanceEl = document.querySelector('#requestBalance');
+
+            const paymentUpdateUrlTemplate = '{{ path('payment_update_sum', {id: 0})|e('js') }}';
+            const paymentDeleteUrlTemplate = '{{ path('payment_delete', {id: 0})|e('js') }}';
+
+            const buildUpdateUrl = (id) => paymentUpdateUrlTemplate.replace('/0/sum', `/${id}/sum`);
+            const buildDeleteUrl = (id) => paymentDeleteUrlTemplate.replace('/0', `/${id}`);
+
+            const ensureEmptyRowVisible = () => {
+                if (!paymentHistoryTable) {
+                    return;
+                }
+
+                const hasRows = paymentHistoryTable.querySelector('[data-payment-row]');
+                let emptyRow = paymentHistoryTable.querySelector('[data-payment-empty="true"]');
+
+                if (hasRows) {
+                    emptyRow?.remove();
+                    return;
+                }
+
+                if (!emptyRow) {
+                    emptyRow = document.createElement('tr');
+                    emptyRow.dataset.paymentEmpty = 'true';
+                    emptyRow.innerHTML = `
+                        <td colspan="4" class="text-center text-muted">Платежей пока нет</td>
+                    `;
+                    paymentHistoryTable.appendChild(emptyRow);
+                }
+            };
 
             const rubFormatter = new Intl.NumberFormat('ru-RU', {
                 style: 'currency',
@@ -289,121 +314,247 @@
                 });
             });
 
-            paymentDeleteButtons.forEach((button) => {
-                button.addEventListener('click', async (event) => {
-                    event.preventDefault();
-
-                    const row = button.closest('tr');
-                    const sumInput = row?.querySelector('input[data-payment-id]');
-                    const sumValue = (sumInput?.value ?? '').trim();
-
-                    if (!window.confirm(`удалить платеж на ${sumValue}?`)) {
-                        return;
-                    }
-
-                    const deleteUrl = button.dataset.paymentDeleteUrl ?? '';
-                    const deleteToken = button.dataset.paymentDeleteToken ?? '';
-
-                    if (!deleteUrl || !deleteToken) {
-                        console.error('Отсутствуют данные для удаления платежа');
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(deleteUrl, {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            body: JSON.stringify({
-                                _token: deleteToken,
-                            }),
-                        });
-
-                        if (!response.ok) {
-                            console.error('Ошибка при удалении платежа', await response.text());
-                            return;
-                        }
-
-                        const data = await response.json();
-
-                        row?.remove();
-                        updatePaymentTotals(data?.totals ?? null);
-                        showToast('успешно', 'success');
-                    } catch (error) {
-                        console.error('Не удалось удалить платеж', error);
-                        showToast('Не удалось удалить платеж', 'error');
-                    }
+            const bindDeleteHandlers = () => {
+                const paymentDeleteButtons = document.querySelectorAll('[data-payment-delete]');
+                paymentDeleteButtons.forEach((button) => {
+                    button.removeEventListener('click', handleDeleteClick);
+                    button.addEventListener('click', handleDeleteClick);
                 });
-            });
+            };
 
-            paymentSumInputs.forEach((input) => {
-                input.addEventListener('focus', () => {
-                    input.dataset.paymentSumInitial = (input.value ?? '').trim();
+            const bindSumHandlers = () => {
+                const paymentSumInputs = document.querySelectorAll('input[data-payment-id]');
+                paymentSumInputs.forEach((input) => {
+                    input.removeEventListener('focus', handleSumFocus);
+                    input.removeEventListener('blur', handleSumBlur);
+                    input.addEventListener('focus', handleSumFocus);
+                    input.addEventListener('blur', handleSumBlur);
                 });
+            };
 
-                input.addEventListener('blur', async () => {
-                    const initialValue = (input.dataset.paymentSumInitial ?? '').trim();
-                    const currentValue = (input.value ?? '').trim();
+            const handleDeleteClick = async (event) => {
+                event.preventDefault();
 
-                    if (currentValue === initialValue) {
+                const button = event.currentTarget;
+                const row = button.closest('tr');
+                const sumInput = row?.querySelector('input[data-payment-id]');
+                const sumValue = (sumInput?.value ?? '').trim();
+
+                if (!window.confirm(`удалить платеж на ${sumValue}?`)) {
+                    return;
+                }
+
+                const deleteUrl = button.dataset.paymentDeleteUrl ?? '';
+                const deleteToken = button.dataset.paymentDeleteToken ?? '';
+
+                if (!deleteUrl || !deleteToken) {
+                    console.error('Отсутствуют данные для удаления платежа');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(deleteUrl, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: JSON.stringify({
+                            _token: deleteToken,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        console.error('Ошибка при удалении платежа', await response.text());
                         return;
                     }
 
-                    const updateUrl = input.dataset.paymentUpdateUrl ?? '';
-                    const updateToken = input.dataset.paymentUpdateToken ?? '';
+                    const data = await response.json();
 
-                    if (!updateUrl || !updateToken) {
-                        console.error('Отсутствуют данные для обновления платежа');
-                        showToast('Не удалось обновить платеж', 'error');
-                        input.value = initialValue;
-                        return;
+                    row?.remove();
+                    updatePaymentTotals(data?.totals ?? null);
+                    ensureEmptyRowVisible();
+
+                    showToast('успешно', 'success');
+                } catch (error) {
+                    console.error('Не удалось удалить платеж', error);
+                    showToast('Не удалось удалить платеж', 'error');
+                } finally {
+                    row?.removeAttribute('data-payment-row');
+                }
+            };
+
+            const handleSumFocus = (event) => {
+                const input = event.currentTarget;
+                input.dataset.paymentSumInitial = (input.value ?? '').trim();
+                input.dataset.paymentSumInitialRaw = (input.value ?? '').trim().replace(/[^\d.-]/g, '');
+            };
+
+            const handleSumBlur = async (event) => {
+                const input = event.currentTarget;
+                const initialValue = (input.dataset.paymentSumInitial ?? '').trim();
+                const initialValueRaw = (input.dataset.paymentSumInitialRaw ?? '').trim();
+                const currentValue = (input.value ?? '').trim();
+                const currentValueRaw = (input.value ?? '').trim().replace(/[^\d.-]/g, '');
+
+                if (currentValueRaw === initialValueRaw) {
+                    return;
+                }
+
+                const updateUrl = input.dataset.paymentUpdateUrl ?? '';
+                const updateToken = input.dataset.paymentUpdateToken ?? '';
+
+                if (!updateUrl || !updateToken) {
+                    console.error('Отсутствуют данные для обновления платежа');
+                    showToast('Не удалось обновить платеж', 'error');
+                    input.value = initialValue;
+                    return;
+                }
+
+                input.disabled = true;
+
+                try {
+                    const response = await fetch(updateUrl, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: JSON.stringify({
+                            _token: updateToken,
+                            sum: currentValueRaw,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(errorText || 'Ошибка сервера');
                     }
 
-                    input.disabled = true;
+                    const data = await response.json();
 
-                    try {
-                        const response = await fetch(updateUrl, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            body: JSON.stringify({
-                                _token: updateToken,
-                                sum: currentValue,
-                            }),
-                        });
+                    input.dataset.paymentSumInitial = currentValue;
+                    input.dataset.paymentSumInitialRaw = currentValueRaw;
+                    updatePaymentTotals(data?.totals ?? null);
 
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            throw new Error(errorText || 'Ошибка сервера');
+                    const badgeSelectorId = input.dataset.paymentId ?? '';
+                    if (badgeSelectorId !== '') {
+                        const badgeEl = document.querySelector(`[data-payment-badge="${badgeSelectorId}"]`);
+                        if (badgeEl && typeof data?.sum === 'number') {
+                            const badgeClass = data.sum > 0 ? 'bg-success' : (data.sum < 0 ? 'bg-danger' : 'bg-secondary');
+                            badgeEl.classList.remove('bg-success', 'bg-danger', 'bg-secondary');
+                            badgeEl.classList.add(badgeClass);
                         }
-
-                        const data = await response.json();
-
-                        input.dataset.paymentSumInitial = currentValue;
-                        updatePaymentTotals(data?.totals ?? null);
-
-                        const badgeSelectorId = input.dataset.paymentId ?? '';
-                        if (badgeSelectorId !== '') {
-                            const badgeEl = document.querySelector(`[data-payment-badge="${badgeSelectorId}"]`);
-                            if (badgeEl && typeof data?.sum === 'number') {
-                                const badgeClass = data.sum > 0 ? 'bg-success' : (data.sum < 0 ? 'bg-danger' : 'bg-secondary');
-                                badgeEl.classList.remove('bg-success', 'bg-danger', 'bg-secondary');
-                                badgeEl.classList.add(badgeClass);
-                            }
-                        }
-
-                        showToast('успешно', 'success');
-                    } catch (error) {
-                        console.error('Не удалось обновить платеж', error);
-                        input.value = initialValue;
-                        showToast(error instanceof Error ? error.message : 'Не удалось обновить платеж', 'error');
-                        input.disabled = false;
                     }
-                });
+
+                    showToast('успешно', 'success');
+                } catch (error) {
+                    console.error('Не удалось обновить платеж', error);
+                    input.value = initialValue;
+                    showToast(error instanceof Error ? error.message : 'Не удалось обновить платеж', 'error');
+                } finally {
+                    input.disabled = false;
+                }
+            };
+
+            const buildPaymentRow = (payload) => {
+                if (!payload || typeof payload !== 'object') {
+                    return null;
+                }
+
+                const tr = document.createElement('tr');
+                tr.dataset.paymentRow = payload.id;
+
+                const sumValueRaw = typeof payload.sum === 'number'
+                    ? Math.round(payload.sum / 100)
+                    : '';
+
+                const sumValue = sumValueRaw === '' ? '' : String(sumValueRaw);
+
+                const id = payload.id ?? 0;
+                const deleteUrl = buildDeleteUrl(id);
+                const updateUrl = buildUpdateUrl(id);
+                const deleteToken = payload.csrf?.delete ?? '';
+                const updateToken = payload.csrf?.update ?? '';
+
+                tr.innerHTML = `
+                    <td>${payload.created ?? '—'}</td>
+                    <td class="text-center">
+                        <input
+                            type="number"
+                            pattern="-?[0-9]*"
+                            step="1"
+                            class="form-control form-control-sm text-end"
+                            name="payment_sum_${payload.id}"
+                            value="${sumValue}"
+                            data-payment-id="${payload.id}"
+                            data-payment-sum-initial="${sumValue}"
+                            data-payment-update-url="${updateUrl}"
+                            data-payment-update-token="${updateToken}"
+                        >
+                    </td>
+                    <td>
+                        <span
+                            class="badge ${payload.sum > 0 ? 'bg-success' : payload.sum < 0 ? 'bg-danger' : 'bg-secondary'}"
+                            data-payment-badge="${payload.id}"
+                        >
+                            ${payload.note ?? payload.typeLabel ?? ''}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            data-payment-delete="${payload.id}"
+                            data-payment-delete-token="${deleteToken}"
+                            data-payment-delete-url="${deleteUrl}"
+                            title="Удалить"
+                        >
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+
+                return tr;
+            };
+
+            const handlePaymentCreated = (event) => {
+                if (paymentModalEl) {
+                    paymentModalEl.dataset.paymentHistoryUpdated = '1';
+                }
+                const data = event.detail ?? null;
+                if (!data) {
+                    window.location.reload();
+                    return;
+                }
+
+                updatePaymentTotals(data.totals ?? null);
+
+                const row = buildPaymentRow(data);
+
+                if (row && paymentHistoryTable) {
+                    const emptyRow = paymentHistoryTable.querySelector('[data-payment-empty="true"]');
+                    if (emptyRow) {
+                        emptyRow.remove();
+                    }
+
+                    paymentHistoryTable.prepend(row);
+                    bindDeleteHandlers();
+                    bindSumHandlers();
+                    ensureEmptyRowVisible();
+                } else {
+                    window.location.reload();
+                }
+            };
+
+            paymentModalEl?.addEventListener('payment:created', handlePaymentCreated);
+
+            bindDeleteHandlers();
+            bindSumHandlers();
+            ensureEmptyRowVisible();
+
+            paymentModalEl?.addEventListener('hidden.bs.modal', () => {
+                delete paymentModalEl.dataset.paymentHistoryUpdated;
             });
 
             const titleEl = document.querySelector('#requestTitle');

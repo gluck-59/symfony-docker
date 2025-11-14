@@ -111,6 +111,7 @@
 
                 const paymentCreateUrl = '{{ path('payment_create')|e('js') }}';
                 const paymentCreateToken = '{{ csrf_token('payment_create')|e('js') }}';
+                let paymentHistoryUpdatedFlag = false;
 
                 const showToast = (message, type = 'success') => {
                     const container = document.querySelector('.toast-container');
@@ -176,6 +177,7 @@
                 };
 
                 paymentModalEl.addEventListener('show.bs.modal', (event) => {
+                    paymentHistoryUpdatedFlag = false;
                     const trigger = event.relatedTarget;
                     const directionRaw = trigger?.dataset.direction ?? '1';
                     meta.direction = Number.parseInt(directionRaw, 10);
@@ -280,11 +282,6 @@
                             }
 
                             showToast('Платеж сохранен', 'success');
-
-                            if (paymentModalEl.dataset.paymentSource === 'request') {
-                                window.location.reload();
-                                return;
-                            }
 
                             const modalInstance = window.bootstrap?.Modal
                                 ? window.bootstrap.Modal.getOrCreateInstance(paymentModalEl)
