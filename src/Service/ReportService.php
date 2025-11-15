@@ -45,12 +45,12 @@ final class ReportService
         $rows = $qb->getQuery()->getResult();
 
         return array_map(static function (array $row): array {
-            $balance = (int) ($row['balance'] ?? 0);
+            $balance = (int)($row['balance'] ?? 0);
 
             return [
-                'equipment' => (string) $row['equipmentName'],
-                'request' => (string) $row['requestName'],
-                'customer' => (string) $row['customerName'],
+                'equipment' => (string)$row['equipmentName'],
+                'request' => (string)$row['requestName'],
+                'customer' => (string)$row['customerName'],
                 'sum' => intdiv($balance, 100),
             ];
         }, $rows);
@@ -87,12 +87,12 @@ final class ReportService
         $rows = $qb->getQuery()->getResult();
 
         return array_map(static function (array $row): array {
-            $total = (int) ($row['positiveTotal'] ?? 0);
+            $total = (int)($row['positiveTotal'] ?? 0);
 
             return [
-                'customer' => (string) $row['customerName'],
-                'equipment' => (string) $row['equipmentName'],
-                'request' => (string) $row['requestName'],
+                'customer' => (string)$row['customerName'],
+                'equipment' => (string)$row['equipmentName'],
+                'request' => (string)$row['requestName'],
                 'sum' => intdiv($total, 100),
             ];
         }, $rows);
@@ -103,27 +103,67 @@ final class ReportService
      */
     public function getSalaryByMonth(User $user, bool $isAdmin): array
     {
-        $qb = $this->em->createQueryBuilder()
-            ->select("FUNCTION('DATE_FORMAT', payment.created, '%Y-%m') AS monthLabel")
-            ->addSelect('COALESCE(SUM(CASE WHEN payment.sum > 0 THEN payment.sum ELSE 0 END), 0) AS totalPositive')
-            ->from(Payment::class, 'payment')
-            ->join('payment.request', 'request')
-            ->join('request.customer', 'customer')
-            ->groupBy('monthLabel')
-            ->orderBy('monthLabel', 'ASC');
+        $connection = $this->em->getConnection();
+
+        $sql = <<<SQL
+            SELECT
+                YEAR(p.created) AS year_num,
+                MONTH(p.created) AS month_num,
+                /*SUM(CASE WHEN p.sum > 0 THEN p.sum ELSE 0 END) AS total*/
+                SUM(p.sum) AS total 
+            FROM payment p
+                INNER JOIN request r ON r.id = p.request_id
+                INNER JOIN customer c ON c.id = r.customer_id
+            %s
+            GROUP BY year_num, month_num
+            ORDER BY year_num DESC, month_num DESC
+        SQL;
+
+        $conditions = ['r.status IN (:statuses)'];
+        $params = [
+            'statuses' => [Request::STATUS_NEW, Request::STATUS_IN_PROGRESS],
+        ];
+        $types = [
+            'statuses' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+        ];
 
         if (!$isAdmin) {
-            $qb->andWhere('customer.creator = :user')
-                ->setParameter('user', $user);
+            $conditions[] = 'c.creator_id = :creatorId';
+            $params['creatorId'] = $user->getId();
+            $types['creatorId'] = \PDO::PARAM_INT;
         }
 
-        $rows = $qb->getQuery()->getResult();
+        $whereSql = 'WHERE ' . implode(' AND ', $conditions);
+        $finalSql = sprintf($sql, $whereSql);
 
-        return array_map(static function (array $row): array {
-            $total = (int) ($row['totalPositive'] ?? 0);
+        $rows = $connection->executeQuery($finalSql, $params, $types)->fetchAllAssociative();
+
+        $monthNames = [
+            1 => 'январь',
+            2 => 'февраль',
+            3 => 'март',
+            4 => 'апрель',
+            5 => 'май',
+            6 => 'июнь',
+            7 => 'июль',
+            8 => 'август',
+            9 => 'сентябрь',
+            10 => 'октябрь',
+            11 => 'ноябрь',
+            12 => 'декабрь',
+        ];
+
+        return array_map(static function (array $row) use ($monthNames): array {
+            $year = (int) ($row['year_num'] ?? 0);
+            $month = (int) ($row['month_num'] ?? 0);
+            $total = (int) ($row['total'] ?? 0);
+
+            $label = ($year > 0 && $month > 0)
+                ? sprintf('%s %04d', $monthNames[$month] ?? sprintf('%02d', $month), $year)
+                : '';
 
             return [
-                'month' => (string) $row['monthLabel'],
+                'month' => $label,
                 'sum' => intdiv($total, 100),
             ];
         }, $rows);
