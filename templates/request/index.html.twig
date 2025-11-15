@@ -15,7 +15,7 @@
                             <th scope="col">Станок/клиент</th>
                             <th scope="col">Работы</th>
                             <th scope="col">Баланс</th>
-                            <th scope="col">Созд./Изм.</th>
+                            <th scope="col" class="d-none d-md-table-cell">Созд./Изм.</th>
 {#                            <th scope="col">Обновлена</th>#}
                         </tr>
                     </thead>
@@ -55,7 +55,7 @@
                                             {{ requestBalanceRub }}
                                         </span>
                                     </td>
-                                    <td>{{ request.created ? request.created|date('d.m.Y H:i') : '—' }}
+                                    <td class="d-none d-md-table-cell">{{ request.created ? request.created|date('d.m.Y H:i') : '—' }}
                                     <br><span class="text-muted">{{ request.updated ? request.updated|date('d.m.Y H:i') : '—' }}</span>
                                     </td>
 {#                                    <td>{{ request.updated ? request.updated|date('d.m.Y H:i') : '—' }}</td>#}
